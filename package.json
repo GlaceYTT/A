@@ -9,17 +9,23 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5",
     "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
     "discord.js": "^14.14.1",
-    "riffy": "^3.0.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "riffy": "^1.0.7-rc.2"
   },
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["discord", "bot", "music", "api", "web-control"],
+  "keywords": [
+    "discord",
+    "bot",
+    "music",
+    "api",
+    "web-control"
+  ],
   "author": "Your Name",
   "license": "MIT"
 }
