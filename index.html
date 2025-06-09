@@ -5,92 +5,168 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>GlaceYT</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            font-family: 'Press Start 2P', cursive;
-            color: #00ff00;
-            text-align: center;
-            background-color: black;
-        }
-
-        h1, h2 {
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
             margin: 0;
             padding: 0;
-            animation: flicker 1.5s infinite alternate;
+            box-sizing: border-box;
         }
-
-        h1 {
-            font-size: 3em;
+        
+        body {
+            font-family: 'Orbitron', monospace;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
-
-        h2 {
-            font-size: 1.2em;
+        
+        .logo {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #00ff88, #00d4ff, #ff00ff);
+            background-size: 200% 200%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 2s ease-in-out infinite;
+            margin-bottom: 3rem;
+            text-shadow: 0 0 50px rgba(0, 255, 136, 0.8);
         }
-
-        @keyframes flicker {
-            0%   { opacity: 1; }
-            50%  { opacity: 0.5; }
-            100% { opacity: 1; }
+        
+        .countdown {
+            font-size: 15rem;
+            font-weight: 900;
+            color: #00ff88;
+            text-shadow: 0 0 100px #00ff88, 0 0 200px #00ff88;
+            animation: pulse 1s ease-in-out infinite;
+            margin: 2rem 0;
         }
-
-        .hacking-theme {
-            position: absolute;
+        
+        .redirecting {
+            font-size: 1.2rem;
+            color: #ffffff;
+            opacity: 0.8;
+            letter-spacing: 2px;
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 0.8; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* Particles background */
+        .particles {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden;
-            z-index: -1;
             pointer-events: none;
+            z-index: -1;
         }
-
-        .hacking-theme div {
+        
+        .particle {
             position: absolute;
-            width: 2px;
-            height: 100%;
-            background: #00ff00;
-            opacity: 0;
-            animation: moveAndFade 5s linear infinite;
+            width: 3px;
+            height: 3px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: float 6s infinite linear;
+            opacity: 0.6;
         }
-
-        @keyframes moveAndFade {
-            0%   { transform: translateY(-100%); opacity: 0; }
-            50%  { opacity: 1; }
-            100% { transform: translateY(100%); opacity: 0; }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 0.6;
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
         }
-
-        .hacking-theme div:nth-child(odd)  { animation-duration: 4s; }
-        .hacking-theme div:nth-child(even) { animation-duration: 6s; }
+        
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .countdown {
+                font-size: 8rem;
+            }
+            
+            .redirecting {
+                font-size: 1rem;
+            }
+        }
     </style>
-    <script>
-        // Redirect after 3 seconds
-        setTimeout(() => {
-            window.location.href = "https://ssrr.tech";
-        }, 3000);
-    </script>
 </head>
 <body>
-    <div class="content">
-        <h1>GlaceYT</h1>
-        <h2>SMART CONTROL MUSIC BOT</h2>
-    </div>
-    <div class="hacking-theme">
-        <div style="left: 10%;"></div>
-        <div style="left: 20%;"></div>
-        <div style="left: 30%;"></div>
-        <div style="left: 40%;"></div>
-        <div style="left: 50%;"></div>
-        <div style="left: 60%;"></div>
-        <div style="left: 70%;"></div>
-        <div style="left: 80%;"></div>
-        <div style="left: 90%;"></div>
-    </div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="logo">GlaceYT</div>
+    <div class="countdown" id="countdown">5</div>
+    <div class="redirecting">REDIRECTING...</div>
+    
+    <script>
+        // Create particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Countdown functionality
+        let count = 5;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            count--;
+            countdownElement.textContent = count;
+            
+            if (count <= 0) {
+                clearInterval(timer);
+                window.location.href = "https://www.ssrr.tech/resource/musicpannel";
+            }
+        }, 1000);
+        
+        // Initialize particles
+        createParticles();
+    </script>
 </body>
 </html>
