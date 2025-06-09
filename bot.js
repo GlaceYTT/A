@@ -1,6 +1,8 @@
-import { Client, GatewayDispatchEvents } from "discord.js";
+import { Client, GatewayDispatchEvents, ActivityType } from "discord.js";
 import { Riffy } from "riffy";
 import dotenv from "dotenv";
+import config from "./config.js";
+
 dotenv.config();
 
 export const client = new Client({
@@ -14,36 +16,44 @@ export const client = new Client({
   ],
 });
 
-const nodes = [
-  {
-    name: "GlaceYT",
-    password: "glaceyt",
-    host: "5.39.63.207",
-    port: 8262,
-    secure: false,
-  },
-];
-
-client.riffy = new Riffy(client, nodes, {
+client.riffy = new Riffy(client, config.lavalink.nodes, {
   send: (payload) => {
     const guild = client.guilds.cache.get(payload.d.guild_id);
     if (guild) guild.shard.send(payload);
   },
-  defaultSearchPlatform: "ytmsearch",
-  restVersion: "v4",
+  defaultSearchPlatform: config.lavalink.defaultSearchPlatform,
+  restVersion: config.lavalink.restVersion,
 });
+
+
+let currentActivityIndex = 0;
+let activityInterval;
+let currentlyPlaying = null;
+
+
+function setRotatingActivity() {
+  if (currentlyPlaying) {
+    client.user.setActivity(`${currentlyPlaying.title} by ${currentlyPlaying.author}`, {
+      type: ActivityType.Listening
+    });
+  } else {
+    const activity = config.activities[currentActivityIndex];
+    const activityType = ActivityType[activity.type] || ActivityType.Playing;
+    
+    client.user.setActivity(activity.text, { type: activityType });
+    
+    currentActivityIndex = (currentActivityIndex + 1) % config.activities.length;
+  }
+}
 
 client.on("ready", () => {
   client.riffy.init(client.user.id);
   console.log(`Logged in as ${client.user.tag}`);
-});
+  
 
-// Comment out or remove messageCreate command listener as it's command-less now
-/*
-client.on("messageCreate", async (message) => {
-  // command logic removed
+  setRotatingActivity();
+  activityInterval = setInterval(setRotatingActivity, config.activityRotationInterval);
 });
-*/
 
 client.riffy.on("nodeConnect", (node) => {
   console.log(`Node "${node.name}" connected.`);
@@ -56,6 +66,13 @@ client.riffy.on("nodeError", (node, error) => {
 client.riffy.on("trackStart", async (player, track) => {
   const channel = client.channels.cache.get(player.textChannel);
   if (channel) channel.send(`Now playing: \`${track.info.title}\` by \`${track.info.author}\`.`);
+  
+  currentlyPlaying = {
+    title: track.info.title,
+    author: track.info.author
+  };
+  
+  setRotatingActivity();
 });
 
 client.riffy.on("queueEnd", async (player) => {
@@ -63,7 +80,19 @@ client.riffy.on("queueEnd", async (player) => {
     const channel = client.channels.cache.get(player.textChannel);
     if (channel) channel.send("Queue has ended.");
   }
+  
+  currentlyPlaying = null;
+  
+  setRotatingActivity();
+  
   player.destroy();
+});
+
+client.riffy.on("trackEnd", async (player, track) => {
+  if (player.queue.length === 0) {
+    currentlyPlaying = null;
+    setRotatingActivity();
+  }
 });
 
 client.on("raw", (d) => {
@@ -71,4 +100,13 @@ client.on("raw", (d) => {
   client.riffy.updateVoiceState(d);
 });
 
-client.login(process.env.TOKEN);
+
+process.on('SIGINT', () => {
+  if (activityInterval) {
+    clearInterval(activityInterval);
+  }
+  client.destroy();
+  process.exit(0);
+});
+
+client.login(process.env.TOKEN || config.token);
