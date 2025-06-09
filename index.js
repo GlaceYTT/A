@@ -3,10 +3,13 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { botController } from './botController.js';
 import os from 'os';
-
+import path from 'path';
 const app = express();
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Enhanced CORS configuration for multi-tenant support
+
 app.use(cors({
     origin: '*', // Allow all origins for public web panel
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -15,8 +18,11 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+app.get('/', (req, res) => {
+    const imagePath = path.join(__dirname, 'index.html');
+    res.sendFile(imagePath);
+});
 
-// Get server information
 function getServerInfo() {
     const networkInterfaces = os.networkInterfaces();
     const addresses = [];
@@ -38,7 +44,7 @@ function getServerInfo() {
     };
 }
 
-// Enhanced Authentication Middleware with detailed logging
+
 function authenticate(req, res, next) {
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     const timestamp = new Date().toISOString();
@@ -49,7 +55,7 @@ function authenticate(req, res, next) {
         return next();
     }
 
-    // Get credentials from request body
+   
     const { userId, botId } = req.body || {};
     
     console.log(`[${timestamp}] [${clientIp}] AUTH REQUEST: userId=${userId}, botId=${botId}, endpoint=${req.path}`);
